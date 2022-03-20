@@ -92,6 +92,26 @@ class nodevisitor(object):
             dochild = self._visitnode(n, n.command)
             if dochild is None or dochild:
                 self.visit(n.command)
+        elif k in ('case'):
+            dochild = self._visitnode(n, n.parts)
+            if dochild is None or dochild:
+                for child in n.parts:
+                    self.visit(child)
+        elif k == 'pattern_list':
+            dochild = self._visitnode(n, n.parts, None)
+            if dochild is None or dochild:
+                for child in n.parts:
+                    self.visit(child)
+        elif k == 'case_clause_sequence':
+            dochild = self._visitnode(n, n.parts, None)
+            if dochild is None or dochild:
+                for child in n.parts:
+                    self.visit(child)
+        elif k == 'pattern':
+            dochild = self._visitnode(n, n.parts)
+            if dochild is None or dochild:
+                for child in n.parts:
+                    self.visit(child)
         else:
             raise ValueError('unknown node kind %r' % k)
         self.visitnodeend(n)
@@ -124,11 +144,19 @@ class nodevisitor(object):
         pass
     def visitword(self, n, word):
         pass
+    def visitpattern(self, n, parts):
+        pass
+    def visitpattern_list(self, n, parts, action):
+        pass
     def visitassignment(self, n, word):
         pass
     def visitreservedword(self, n, word):
         pass
     def visitparameter(self, n, value):
+        pass
+    def visitcase(self, n, parts):
+        pass
+    def visitcase_clause_sequence(self, n, parts, sequence):
         pass
     def visittilde(self, n, value):
         pass

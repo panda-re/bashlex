@@ -293,7 +293,18 @@ def p_case_command(p):
     '''case_command : CASE WORD newline_list IN newline_list ESAC
                     | CASE WORD newline_list IN case_clause_sequence newline_list ESAC
                     | CASE WORD newline_list IN case_clause ESAC'''
-    handleNotImplemented(p, 'case command')
+    parts = _makeparts(p)
+    word = parts[1]
+    p[0] = ast.node(kind='compound',
+                    redirects = [],
+                    list = [ast.node(kind='case',
+                                    word=word,
+                                    parts = parts,
+                                    pos=_partsspan(parts))
+                            ],
+                    pos = _partsspan(parts))
+    
+    # handleNotImplemented(p, 'case command')
 
 def p_function_def(p):
     '''function_def : WORD LEFT_PAREN RIGHT_PAREN newline_list function_body
@@ -384,7 +395,28 @@ def p_pattern_list(p):
                     | newline_list pattern RIGHT_PAREN newline_list
                     | newline_list LEFT_PAREN pattern RIGHT_PAREN compound_list
                     | newline_list LEFT_PAREN pattern RIGHT_PAREN newline_list'''
-    handleNotImplemented(p, 'pattern list')
+    
+    parserobj = p.context
+    parts = []
+    action = None
+    if p.slice[2].type == 'pattern':
+        patterns = p[2]
+        parts.append(patterns)
+        rbracket = ast.node(kind='reservedword', word=p[3], pos=p.lexspan(3))
+        parts.append(rbracket)
+        if p.slice[4].type == 'compound_list':
+            action = p[4]
+            parts.append(action)
+    else:
+        lbracket = ast.node(kind='reservedword', word=p[1], pos=p.lexspan(1))
+        parts.append(lbracket)
+        patterns = p[3]
+        parts.append(patterns)
+        if p[5].kind == 'compound':
+            action = p[5]
+            parts.append(action)
+    p[0] = ast.node(kind='pattern_list',
+                        parts=parts,pos=_partsspan(parts) )
 
 def p_case_clause_sequence(p):
     '''case_clause_sequence : pattern_list SEMI_SEMI
@@ -393,12 +425,32 @@ def p_case_clause_sequence(p):
                             | case_clause_sequence pattern_list SEMI_AND
                             | pattern_list SEMI_SEMI_AND
                             | case_clause_sequence pattern_list SEMI_SEMI_AND'''
-    handleNotImplemented(p, 'case clause')
+    
+    parts = _makeparts(p)
+    if p.slice[1].type == 'case_clause_sequence':
+        parts = [parts[1],parts[2]]
+        cmpd = ast.node(kind='compound',
+                    redirects=[],
+                    list=parts,
+                    pos=_partsspan(parts))
+        p[1].parts.append(cmpd)
+        p[1].pos = _partsspan(p[1].parts)
+        p[0] = p[1]
+    else:
+        cmpd = ast.node(kind='compound',
+                    redirects=[],
+                    list=parts,
+                    pos=_partsspan(parts))
+        case_parts = [cmpd]
+        p[0] = ast.node(kind='case_clause_sequence', parts = case_parts, pos=_partsspan(case_parts))
 
 def p_pattern(p):
     '''pattern : WORD
                | pattern BAR WORD'''
-    handleNotImplemented(p, 'pattern')
+    parserobj = p.context
+    parts = _makeparts(p)
+    p[0] = ast.node(kind='pattern', parts=parts, pos=_partsspan(parts))
+
 
 def p_list(p):
     '''list : newline_list list0'''
