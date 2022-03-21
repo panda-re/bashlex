@@ -294,11 +294,9 @@ def p_case_command(p):
                     | CASE WORD newline_list IN case_clause_sequence newline_list ESAC
                     | CASE WORD newline_list IN case_clause ESAC'''
     parts = _makeparts(p)
-    word = parts[1]
     p[0] = ast.node(kind='compound',
                     redirects = [],
                     list = [ast.node(kind='case',
-                                    word=word,
                                     parts = parts,
                                     pos=_partsspan(parts))
                             ],

@@ -54,6 +54,12 @@ def pipelinenode(s, *parts):
 def operatornode(op, s):
     return ast.node(kind='operator', op=op, s=s)
 
+def casenode(parts, s):
+    return ast.node(kind='compound',
+                  redirects=[],
+                  list = [ast.node(kind='case', parts=list(parts), s=s)
+                  ])
+
 def listnode(s, *parts):
     for i in range(len(parts)):
         if i % 2 == 0:
@@ -66,6 +72,9 @@ def compoundnode(s, *parts, **kwargs):
     redirects = kwargs.pop('redirects', [])
     assert not kwargs
     return ast.node(kind='compound', s=s, list=list(parts), redirects=redirects)
+
+def caseclausesequence(s, parts):
+    return ast.node(kind='caseclausesequence', parts=list(parts), s=s)
 
 def procsubnode(s, command):
     return ast.node(kind='processsubstitution', s=s, command=command)
@@ -1103,3 +1112,25 @@ class test_parser(unittest.TestCase):
               ])
             ),
         )
+    
+    def test_cases(self):
+      return 
+      # s = """
+      # case "$1" in
+      # 1) echo 1;;
+      # 2)
+      #   # comment
+      #   (
+      #     echo 2
+      #     echo 3
+      #   )
+      #   ;;
+      # 3) echo 3;;
+      # esac
+      # """
+      # self.assertASTEquals(s,
+      #     casenode(s, parts= [
+      #       reservedwordnode('case', 'case'),
+            
+      #     ])
+      # )
